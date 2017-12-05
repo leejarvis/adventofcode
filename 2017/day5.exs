@@ -1,6 +1,8 @@
 # http://adventofcode.com/2017/day/5
 
 defmodule Day5 do
+  @part2 true # yes this is very slow..
+
   def count_steps(list) when is_list(list) do
     count(list, 0, 0)
   end
@@ -19,7 +21,14 @@ defmodule Day5 do
       pos == Enum.count(list) -> steps
       true ->
         curr = Enum.at(list, pos)
-        list = List.replace_at(list, pos, curr + 1)
+
+        inc = if @part2 && curr >= 3 do
+          -1
+        else
+          1
+        end
+
+        list = List.replace_at(list, pos, curr + inc)
 
         count(list, pos + curr, steps + 1)
     end
