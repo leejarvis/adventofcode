@@ -1,5 +1,23 @@
 # http://adventofcode.com/2017/day/8
 
+defmodule Task2 do
+  use GenServer
+
+  def start_link() do
+    {:ok, _} = GenServer.start_link(__MODULE__, 0, name: __MODULE__)
+  end
+
+  def put(value), do: GenServer.call(Task2, {:put, value})
+  def get(), do: GenServer.call(Task2, :get)
+
+  def handle_call(:get, _, value), do: {:reply, value, value}
+
+  def handle_call({:put, value}, _, prev) do
+    v = Enum.max([value, prev])
+    {:reply, v, v}
+  end
+end
+
 defmodule Day8 do
   def largest_value(file) do
     File.stream!(file)
@@ -24,6 +42,7 @@ defmodule Day8 do
 
   defp run_ins({reg, ins, val, _}, store) do
     stored = Map.get(store, reg, 0)
+    Task2.put(stored)
     case ins do
       "inc" -> Map.put(store, reg, stored + val)
       "dec" -> Map.put(store, reg, stored - val)
@@ -48,5 +67,9 @@ defmodule Day8 do
   end
 end
 
+Task2.start_link()
+
 Day8.largest_value("res/day8.txt")
 |> IO.inspect()
+
+IO.inspect Task2.get()
