@@ -33,12 +33,6 @@ defmodule Day2 do
   end
 end
 
-str = """
-5 1 9 5
-7 5 3
-2 4 6 8
-"""
-
-str
-|> Day2.checksum
-|> IO.inspect
+File.read!("res/day2.txt")
+|> Day2.checksum()
+|> IO.inspect()
