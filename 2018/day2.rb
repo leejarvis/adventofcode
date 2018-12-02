@@ -5,7 +5,6 @@ require "set"
 lines = File.readlines("res/day2.txt")
 two = three = 0
 set = Set.new
-part2 = nil
 
 lines.each do |line|
   chars = line.split("")
@@ -16,10 +15,9 @@ lines.each do |line|
 
   line.length.times { |x|
     alt = line.dup.tap { |l| l[x] = " " }
-    part2 = alt if set.include?(alt)
+    puts alt.delete(" ") if set.include?(alt)
     set << alt
   }
 end
 
 puts two * three
-puts part2.delete(" ")
