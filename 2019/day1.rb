@@ -1,3 +1,9 @@
 #!/usr/bin/env ruby
 
-puts File.readlines("res/day1.txt").map { |x| (x.to_i / 3).to_i - 2 }.sum
+File.readlines("res/day1.txt").map(&:to_i).tap do |i|
+  # one
+  p i.sum { |mod| (mod / 3).to_i - 2 }
+
+  # two
+  p (f = 0) && i.each { |m| loop { ((m = (m / 3).to_i - 2) && m > 0) ? f += m : break } } && f
+end
