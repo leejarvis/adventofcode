@@ -5,7 +5,7 @@ use experimental qw(switch);
 sub execute {
   my ($instructions, $input) = @_;
   my @ins = @{$instructions};
-  my @inputs = ($input);
+  my @inputs = $input ? ($input) : ();
   my @shifts = (0, 4, 4, 2, 2, 3, 3, 4, 4, 2);
   my $pos = $rel = 0;
 
@@ -31,7 +31,14 @@ sub execute {
   return @inputs;
 }
 
-my @instructions = split(/,/, do { local(@ARGV, $/) = "res/day9.txt" ; <>});
 
-print execute(\@instructions, 1);
-print execute(\@instructions, 2);
+if (scalar(@ARGV) == 1) {
+  my @instructions = split(/,/, <>);
+
+  print join(", ", execute(\@instructions));
+} else {
+  my @instructions = split(/,/, do { local(@ARGV, $/) = "res/day9.txt" ; <>});
+
+  print execute(\@instructions, 1);
+  print execute(\@instructions, 2);
+}
