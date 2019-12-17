@@ -1,0 +1,49 @@
+function parse_line(reactions, line) {
+  inputs, output = string::split(line, " => ")
+
+  inputs = string::split(inputs, ", ") | enum::map { |in|
+    in = string::split(in, " ")
+    (string::to_integer(in[0], in[1]))
+  }
+
+  output = string::split(output, " ")
+  output_quantity = string::to_integer(output[0])
+
+  reactions[output[1]] = (output_quantity, inputs)
+}
+
+function parse_input() {
+  file::readlines("res/day14.txt") | enum::each_with([:], &parse_line)
+}
+
+function part1(reactions, fuel) {
+  counts = map::default(0)
+  counts["FUEL"] = fuel
+
+  loop() {
+    f_min, ore = true, 0
+    produced = map::default(0)
+    required = map::default(0)
+
+    for (counts) { |name, q|
+      produced[name] = reactions[name][0] * q
+
+      for (reactions[name][1]) { |q2, c|
+        required[c] += q * q2
+      }
+
+      for (required) { |chemical, quantity|
+        ore += quantity if chemical == "ORE"
+
+        if (produced[chemical] < quantity) {
+          counts[chemical] += math::ceil((quantity - produced[chemical] / reactions[chemical[0]]))
+          f_min = false
+        }
+      }
+
+      if (f_min) { return ore }
+    }
+  }
+}
+
+parse_input() | part1(1) | io::println()
