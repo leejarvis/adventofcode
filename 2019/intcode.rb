@@ -26,6 +26,10 @@ class Intcode
   def process
     return false if opcode == 3 && @input.none?
 
+    if program.any?(&:nil?)
+      program.map! { |x| x || 0 } # wtf?
+    end
+
     case opcode
     when 1; add
     when 2; multiply
