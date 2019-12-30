@@ -1,4 +1,4 @@
-// g++ day8.cpp && ./a.out && rm a.out
+// clang++ -std=c++11 day08.cpp && ./a.out && rm a.out
 
 #include <iostream>
 #include <fstream>
@@ -7,9 +7,11 @@
 #define HEIGHT 25
 #define WIDTH 6
 
-std::vector<std::vector<int> > input_to_layers() {
+using Layers = std::vector<std::vector<int> >;
+
+Layers input_to_layers() {
     std::ifstream input("res/day8.txt");
-    std::vector<std::vector<int> > layers;
+    Layers layers;
     char c;
 
     while (!input.eof()) {
@@ -38,7 +40,7 @@ int count(std::vector<int>& layer, char c) {
     return res;
 }
 
-std::vector<int> min_layer(std::vector<std::vector<int> >& layers) {
+std::vector<int> min_layer(Layers& layers) {
     std::vector<int> res = layers[0];
 
     for (int i = 0; i < layers.size(); i++) {
@@ -48,13 +50,46 @@ std::vector<int> min_layer(std::vector<std::vector<int> >& layers) {
     return res;
 }
 
+std::vector<int> decode(Layers& layers) {
+    std::vector<int> out;
+
+    for (int i = layers.size() - 1; i >= 0; i--) {
+        for (int j = 0; j < out.size(); j++) {
+            int p = layers[i][j];
+
+            if (p != 2) {
+                out[j] = p;
+            }
+        }
+    }
+
+    return out;
+}
+
+void print(std::vector<int> image) {
+    for (int i = 0; i < HEIGHT; i++) {
+        for (int j = 0; j < WIDTH; j++) {
+            int p = image[i * WIDTH + j];
+
+            if (p == 0) {
+                std::cout << " ";
+            } else {
+                std::cout << "X";
+            }
+
+            std::cout << "\n";
+        }
+    }
+}
+
 int main() {
-    std::vector<std::vector<int> > layers = input_to_layers();
+    Layers layers = input_to_layers();
     std::vector<int> layer = min_layer(layers);
 
-    int result = count(layer, '1') * count(layer, '2');
+    int checksum = count(layer, '1') * count(layer, '2');
+    std::cout << checksum << "\n";
 
-    std::cout << result << "\n";
+    print(decode(layers));
 
     return 0;
 }
