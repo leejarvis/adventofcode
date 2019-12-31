@@ -1,67 +1,83 @@
 import itertools
 
-# Pretty much just copied the JS code from day5.. ¯\_(ツ)_/¯
+class Intcode:
+    def __init__(self, program):
+        self.pos = 0
+        self.program = program[:]
+        self.inputs = []
+        self.output = []
+        self.running = False
 
-def execute(instructions, inputs):
-    pos = 0
+    def inp(self, input):
+        self.inputs.append(input)
+        self.run()
 
-    while True:
-        op, p1, p2, p3 = instructions[pos:pos+4]
+    def run(self):
+        self.running = True
 
-        p1mode = int(op / 100) % 10
-        p2mode = int(op / 1000) % 10
+        while True:
+            op, p1, p2, p3 = self.program[self.pos:self.pos+4]
 
-        def el(en, i):
-            if len(en) > i: return en[i]
+            p1mode = int(op / 100) % 10
+            p2mode = int(op / 1000) % 10
 
-        v1 = p1 if p1mode == 1 else el(instructions, p1)
-        v2 = p2 if p2mode == 1 else el(instructions, p2)
+            def el(en, i):
+                if len(en) > i: return en[i]
 
-        if op == 99: break
+            v1 = p1 if p1mode == 1 else el(self.program, p1)
+            v2 = p2 if p2mode == 1 else el(self.program, p2)
 
-        op = str(op)[-1]
+            if op == 99:
+                self.running = False
+                return
 
-        if op == "1":
-            instructions[p3] = v1 + v2
-            pos += 4
-        elif op == "2":
-            instructions[p3] = v1 * v2
-            pos += 4
-        elif op == "3":
-            instructions[p1] = inputs.pop(0)
-            pos += 2
-        elif op == "4":
-            value = v1
-            pos += 2
-            break
-        elif op == "5":
-            if v1 == 0:
-                pos += 3
-            else:
-                pos = v2
-        elif op == "6":
-            if v1 == 0:
-                pos = v2
-            else:
-                pos += 3
-        elif op == "7":
-            instructions[p3] = 1 if v1 < v2 else 0
-            pos += 4
-        elif op == "8":
-            instructions[p3] = 1 if v1 == v2 else 0
-            pos += 4
+            op = str(op)[-1]
 
-    return value
+            if op == "3" and len(self.inputs) == 0:
+                return
 
-instructions = [int(x) for x in open("res/day7.txt").read().split(",")]
-max_signal = 0
+            if op == "1":
+                self.program[p3] = v1 + v2
+                self.pos += 4
+            elif op == "2":
+                self.program[p3] = v1 * v2
+                self.pos += 4
+            elif op == "3":
+                self.program[p1] = self.inputs.pop(0)
+                self.pos += 2
+            elif op == "4":
+                self.output.append(v1)
+                self.pos += 2
+                break
+            elif op == "5":
+                if v1 == 0:
+                    self.pos += 3
+                else:
+                    self.pos = v2
+            elif op == "6":
+                if v1 == 0:
+                    self.pos = v2
+                else:
+                    self.pos += 3
+            elif op == "7":
+                self.program[p3] = 1 if v1 < v2 else 0
+                self.pos += 4
+            elif op == "8":
+                self.program[p3] = 1 if v1 == v2 else 0
+                self.pos += 4
 
-for phases in itertools.permutations([0, 1, 2, 3, 4]):
-    signal = 0
+def run(program, phases):
+    computers = [Intcode(program) for _ in range(5)]
+    for p, c in zip(phases, computers): c.inp(p)
+    computers[0].inp(0)
 
-    for phase in phases:
-        signal = execute(instructions, [phase, signal])
+    while computers[4].running is False:
+        for i, c in computers:
+            computers[(i+1) % 5].inp(c.output[-1])
 
-    max_signal = max(max_signal, signal)
+    return computers[4].output[-1]
 
-print(max_signal)
+program = [int(x) for x in open("res/day7.txt").read().split(",")]
+
+print(max(run(program, p) for p in itertools.permutations(range(5))))
+print(max(run(program, p) for p in itertools.permutations(range(5, 10))))
