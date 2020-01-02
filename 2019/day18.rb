@@ -12,22 +12,38 @@ class Maze
     @key_distance_cache = {}
   end
 
+  def start_position
+    keys.key("@")
+  end
+
   def keys
-    @keys ||= maze.select { |_, v| v =~ /[a-z@]/ }
+    maze.select { |_, v| v =~ /[a-z@]/ }
   end
 
   def distances(from, unlocked = [])
-    @key_mapping[from].each_with_object({}) do |(key, needed_keys, distance), keys|
-      next if unlocked.include?(key) || (needed_keys - unlocked).any?
-      keys[key] = distance
+    @key_mapping[from].each_with_object({}) do |(key, needed, distance), d|
+      next if unlocked.include?(key) || (needed - unlocked).any?
+      d[key] = distance
     end
   end
 
   def min_steps(key, unlocked = [])
     with_key_distance_cache([key, unlocked.sort]) do
-       distances(key, unlocked).map do |k, distance|
+      distances(key, unlocked).map do |k, distance|
         distance + min_steps(k, unlocked + [k])
       end.min || 0
+    end
+  end
+
+  def display
+    minx, maxx = maze.keys.map(&:first).minmax
+    miny, maxy = maze.keys.map(&:last).minmax
+
+    miny.upto(maxy) do |y|
+      minx.upto(maxx) do |x|
+        print(maze[[x, y]])
+      end
+      puts
     end
   end
 
@@ -50,7 +66,7 @@ class Maze
       collected = []
 
       while current = queue.shift
-        pos, needed_keys = current
+        pos, needed = current
 
         DELTA.each do |dx, dy|
           next_pos = [pos[0] + dx, pos[1] + dy]
@@ -61,13 +77,13 @@ class Maze
           distance[next_pos] = distance[pos] + 1
 
           if c =~ /[a-z]/
-            collected << [c, needed_keys, distance[next_pos]]
+            collected << [c, needed, distance[next_pos]]
           end
 
           if c =~ /[A-Z]/
-            queue << [next_pos, needed_keys + [c.downcase]]
+            queue << [next_pos, needed + [c.downcase]]
           else
-            queue << [next_pos, needed_keys]
+            queue << [next_pos, needed]
           end
         end
       end
@@ -80,13 +96,32 @@ end
 input = File.readlines("res/day18.txt")
 # input = DATA.readlines
 
-maze = Maze.new(input.map.with_index.with_object({}) do |(line, y), m|
-  line.chars.each_with_index do |c, x|
+maze_input = input.map.with_index.with_object({}) do |(line, y), m|
+  line.strip.chars.each_with_index do |c, x|
     m[[x, y]] = c
   end
-end)
+end
+
+maze = Maze.new(maze_input)
 
 p maze.min_steps("@")
+
+y, x = maze.start_position
+maze_input[[x, y]] = "#"
+maze_input[[x - 1, y]] = "#"
+maze_input[[x + 1, y]] = "#"
+maze_input[[x, y - 1]] = "#"
+maze_input[[x, y + 1]] = "#"
+
+maze_input[[x - 1, y - 1]] = "@"
+maze_input[[x + 1, y - 1]] = "@"
+maze_input[[x - 1, y + 1]] = "@"
+maze_input[[x + 1, y + 1]] = "@"
+
+maze = Maze.new(maze_input)
+# maze.display
+# p maze.min_steps("@")
+
 
 __END__
 #################
