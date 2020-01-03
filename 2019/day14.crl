@@ -16,10 +16,7 @@ function parse_input() {
   file::readlines("res/day14.txt") | enum::each_with([:], &parse_line)
 }
 
-function part1(reactions, fuel) {
-  counts = map::default(0)
-  counts["FUEL"] = fuel
-
+function ore(reactions, counts) {
   loop() {
     f_min, ore = true, 0
     produced = map::default(0)
@@ -46,4 +43,27 @@ function part1(reactions, fuel) {
   }
 }
 
-parse_input() | part1(1) | io::println()
+function part1(reactions, fuel) {
+  counts = map::default(0)
+  counts["FUEL"] = fuel
+
+  ore(reactions, counts)
+}
+
+function part2(reactions) {
+  n = 1000000000000
+  o = 0
+
+  for (n) { |i|
+    counts = map::default(0)
+    counts["FUEL"] = i
+    o = ore(counts)
+  }
+
+  o
+}
+
+input = parse_input()
+
+part1(input, 1) | io::println()
+part2(input) | io::println()
