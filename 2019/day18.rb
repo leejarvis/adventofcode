@@ -9,30 +9,22 @@ class Maze
     @maze = maze
 
     @key_mapping = create_key_mapping
-    @key_distance_cache = {}
+    @cache = {}
   end
 
-  def start_position
-    keys.key("@")
+  def start_positions
+    maze.select { |_, v| v =~ /[@1-4]/ }
   end
 
   def keys
-    maze.select { |_, v| v =~ /[a-z@]/ }
+    maze.select { |_, v| v =~ /[a-z]/ }
   end
 
-  def distances(from, unlocked = [])
-    @key_mapping[from].each_with_object({}) do |(key, needed, distance), d|
-      next if unlocked.include?(key) || (needed - unlocked).any?
-      d[key] = distance
-    end
-  end
-
-  def min_steps(key, unlocked = [])
-    with_key_distance_cache([key, unlocked.sort]) do
-      distances(key, unlocked).map do |k, distance|
-        distance + min_steps(k, unlocked + [k])
-      end.min || 0
-    end
+  def fewest_steps(entrypoints = start_positions.values, unlocked = [])
+    # Loop through each entrypoint (e.g. @, 1, 2, 3, 4) and separate
+    # the distance mapping per robot so they don't clash
+    @cache[[entrypoints.sort, unlocked.sort]] ||=
+      entrypoints.flat_map { |from| distances(entrypoints, from, unlocked) }.min || 0
   end
 
   def display
@@ -49,8 +41,19 @@ class Maze
 
   private
 
-  def with_key_distance_cache(key)
-    @key_distance_cache[key] || @key_distance_cache[key] = yield
+  def distances(entrypoints, from, unlocked)
+    # fetch the key mapping from this current entrypoint and map a distance
+    @key_mapping[from].each_with_object([]) { |(key, need, distance), d|
+      # ignore this iteration if we've already got everything we need
+      next if unlocked.include?(key) || (need - unlocked).any?
+
+      # for the next iteration, replace the current robot process
+      # with the next "entrypoint"
+      next_positions = entrypoints.dup.tap { |n| n[n.index(from)] = key }
+
+      # god speed
+      d << distance + fewest_steps(next_positions, unlocked + [key])
+    }
   end
 
   # For every key location, do a BFS to every other key location for
@@ -60,30 +63,32 @@ class Maze
   # collect `b` and `c` and hit `d` after 5 moves, then we'll have
   # `{ "a" => [["d", ["b", "c"], 5]] }`
   def create_key_mapping
-    keys.each_with_object({}) do |(kpos, key), keymap|
+    start_points = keys.merge(start_positions)
+
+    start_points.each_with_object({}) do |(kpos, key), keymap|
       queue = [[kpos, []]]
       distance = { kpos => 0 }
       collected = []
 
       while current = queue.shift
-        pos, needed = current
+        pos, need = current
 
         DELTA.each do |dx, dy|
           next_pos = [pos[0] + dx, pos[1] + dy]
           c = maze[next_pos]
 
           next if c == "#" || distance.has_key?(next_pos)
-
           distance[next_pos] = distance[pos] + 1
 
-          if c =~ /[a-z]/
-            collected << [c, needed, distance[next_pos]]
-          end
+          # picked up a key, record the distance to it
+          collected << [c, need, distance[next_pos]] if c =~ /[a-z]/
 
+          # It's a door, so we need the key
           if c =~ /[A-Z]/
-            queue << [next_pos, needed + [c.downcase]]
+            queue << [next_pos, need + [c.downcase]]
           else
-            queue << [next_pos, needed]
+            # no door,  keep going
+            queue << [next_pos, need]
           end
         end
       end
@@ -103,24 +108,22 @@ maze_input = input.map.with_index.with_object({}) do |(line, y), m|
 end
 
 maze = Maze.new(maze_input)
+p maze.fewest_steps
 
-p maze.min_steps("@")
-
-y, x = maze.start_position
+y, x = maze.start_positions.keys.first
 maze_input[[x, y]] = "#"
 maze_input[[x - 1, y]] = "#"
 maze_input[[x + 1, y]] = "#"
 maze_input[[x, y - 1]] = "#"
 maze_input[[x, y + 1]] = "#"
 
-maze_input[[x - 1, y - 1]] = "@"
-maze_input[[x + 1, y - 1]] = "@"
-maze_input[[x - 1, y + 1]] = "@"
-maze_input[[x + 1, y + 1]] = "@"
+maze_input[[x - 1, y - 1]] = "1"
+maze_input[[x + 1, y - 1]] = "2"
+maze_input[[x - 1, y + 1]] = "3"
+maze_input[[x + 1, y + 1]] = "4"
 
 maze = Maze.new(maze_input)
-# maze.display
-# p maze.min_steps("@")
+p maze.fewest_steps
 
 
 __END__
