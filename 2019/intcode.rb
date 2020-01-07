@@ -23,6 +23,10 @@ class Intcode
     @output
   end
 
+  def output_items
+    @output
+  end
+
   def process
     return false if opcode == 3 && @input.none?
 
