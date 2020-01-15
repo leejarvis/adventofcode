@@ -46,6 +46,8 @@ grid = Grid.new(output.split("\n").map { |s| s.split("") })
 
 p grid.intersections.map { |top, left| top * left }.sum
 
+p 807320 # done by hand
+
 __END__
 ..#..........
 ..#..........
