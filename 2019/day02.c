@@ -13,52 +13,63 @@ void read_input() {
     fclose(fh);
 }
 
-void execute(int *program) {
+void copy_program(int *into) {
+    for (int i = 0; i < LEN; i++) {
+        into[i] = program[i];
+    }
+}
+
+void execute(int *prog) {
     int pos = 0;
-    int op = program[pos];
+    int op = prog[pos];
 
     while (op != 99) {
-        int a1 = program[pos + 1];
-        int v1 = program[a1];
+        int a1 = prog[pos + 1];
+        int v1 = prog[a1];
 
-        int a2 = program[pos + 2];
-        int v2 = program[a2];
+        int a2 = prog[pos + 2];
+        int v2 = prog[a2];
 
-        int loc = program[pos + 3];
+        int loc = prog[pos + 3];
 
         if (op == 1) {
-            program[loc] = v1 + v2;
+            prog[loc] = v1 + v2;
         } else if (op == 2) {
-            program[loc] = v1 * v2;
+            prog[loc] = v1 * v2;
         }
 
         pos += 4;
-        op = program[pos];
+        op = prog[pos];
     }
 }
 
 void part1() {
-    program[1] = 12;
-    program[2] = 2;
+    int *prog;
+    copy_program(prog);
 
-    execute(program);
+    prog[1] = 12;
+    prog[2] = 2;
 
-    printf("%d\n", program[0]);
+    execute(prog);
+
+    printf("%d\n", prog[0]);
 }
 
 void part2() {
-    read_input();
+    int *prog;
+
+    copy_program(prog);
 
     for (int noun = 0; noun < 1000; noun++) {
         for (int verb = 0; verb < 1000; verb++) {
-            read_input();
+            copy_program(prog);
 
-            program[1] = noun;
-            program[2] = verb;
+            prog[1] = noun;
+            prog[2] = verb;
 
-            execute(program);
+            execute(prog);
 
-            if (program[0] == 19690720) {
+            if (prog[0] == 19690720) {
                 printf("%d%d\n", noun, verb);
                 return;
             }
@@ -68,8 +79,8 @@ void part2() {
 
 int main() {
     read_input();
-    part1();
 
+    part1();
     part2();
 
     return 0;
