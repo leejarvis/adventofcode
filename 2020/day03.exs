@@ -4,9 +4,9 @@ defmodule Day3 do
   def solve(input) do
     p1 = count_trees(input, {3, 1})
 
-    p2 = for n <- [{1, 1}, {3, 1}, {5, 1}, {7, 1}, {1, 2}] do
-      count_trees(input, n)
-    end |> Enum.reduce(& &1 * &2)
+    p2 = for n <- [{1, 1}, {3, 1}, {5, 1}, {7, 1}, {1, 2}], reduce: 1 do
+      r -> r * count_trees(input, n)
+    end
 
     {p1, p2}
   end
