@@ -9,8 +9,8 @@ defmodule Advent.TestCase do
         unquote(mod).parse_input(unquote(mod).input)
       end
 
-      test "part 1", do: assert unquote(mod).part1(parsed_input()) == unquote(p1)
-      test "part 2", do: assert unquote(mod).part2(parsed_input()) == unquote(p2)
+      test "part 1", do: assert(unquote(mod).part1(parsed_input()) == unquote(p1))
+      test "part 2", do: assert(unquote(mod).part2(parsed_input()) == unquote(p2))
     end
   end
 end
