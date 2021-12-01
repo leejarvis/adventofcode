@@ -9,8 +9,8 @@ defmodule Advent.Day do
         |> String.trim()
       end
 
-      def input_to_ints(filename \\ "day#{unquote(day)}") do
-        input()
+      def input_to_ints(input) do
+        input
         |> String.split("\n")
         |> Enum.map(&String.to_integer/1)
       end

@@ -5,8 +5,12 @@ defmodule Advent.TestCase do
       alias unquote(mod)
       doctest unquote(mod)
 
-      test "part 1", do: assert unquote(mod).part1() == unquote(p1)
-      test "part 2", do: assert unquote(mod).part2() == unquote(p2)
+      def parsed_input do
+        unquote(mod).parse_input(unquote(mod).input)
+      end
+
+      test "part 1", do: assert unquote(mod).part1(parsed_input()) == unquote(p1)
+      test "part 2", do: assert unquote(mod).part2(parsed_input()) == unquote(p2)
     end
   end
 end
