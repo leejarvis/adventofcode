@@ -17,11 +17,10 @@ defmodule Day8 do
   end
 
   def scenic_score(map, tree) do
-    above = Enum.count(visible_scenic_trees(map, map[tree], tree, {0, -1}))
-    below = Enum.count(visible_scenic_trees(map, map[tree], tree, {0, 1}))
-    left = Enum.count(visible_scenic_trees(map, map[tree], tree, {-1, 0}))
-    right = Enum.count(visible_scenic_trees(map, map[tree], tree, {1, 0}))
-    above * below * left * right
+    Enum.map([{0, -1}, {0, 1}, {-1, 0}, {1, 0}], fn delta ->
+      Enum.count(visible_scenic_trees(map, map[tree], tree, delta))
+    end)
+    |> Enum.product()
   end
 
   def count_visible_trees(map) do
