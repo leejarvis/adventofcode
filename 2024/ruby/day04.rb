@@ -1,23 +1,17 @@
 #!/usr/bin/env ruby
 
-GRID = DATA.readlines.map { _1.chomp.chars }
+require_relative "grid"
+
+GRID = Grid.parse(DATA)
 DIRS = [[1, 0], [0, 1], [0, -1], [-1, 0], [1, 1], [1, -1], [-1, 1], [-1, -1]]
 
-def at(point)
-  x, y = point
-  return if x < 0 or y < 0
-  return unless (row = GRID[y])
-  row[x]
-end
-
 def xmas_count(point)
-  return 0 unless at(point) == "X"
-  x, y = point
+  return 0 unless GRID.at(point) == "X"
   count = 0
 
   DIRS.each { |(dx, dy)|
     (0..3).reduce("") { |word, delta|
-      if (letter = at([x + delta * dx, y + delta * dy]))
+      if (letter = GRID.at(point.add(delta * dx, delta * dy)))
         word + letter
       else
         word
@@ -29,22 +23,19 @@ def xmas_count(point)
 end
 
 def x_mas?(point)
-  return unless at(point) == "A"
-  x, y = point
+  return unless GRID.at(point) == "A"
 
-  d1 = [at([x - 1, y - 1]), at([x + 1, y + 1])].compact.sort
-  d2 = [at([x - 1, y + 1]), at([x + 1, y - 1])].compact.sort
+  d1 = [GRID.at(point.x - 1, point.y - 1), GRID.at(point.x + 1, point.y + 1)].compact.sort
+  d2 = [GRID.at(point.x - 1, point.y + 1), GRID.at(point.x + 1, point.y - 1)].compact.sort
 
   d1 == %w[M S] && d2 == %w[M S]
 end
 
 p1 = p2 = 0
 
-GRID.each_with_index { |row, y|
-  row.each_index { |x|
-    p1 += xmas_count([x, y])
-    p2 += 1 if x_mas?([x, y])
-  }
+GRID.each_point { |point|
+  p1 += xmas_count(point)
+  p2 += 1 if x_mas?(point)
 }
 
 puts "P1: #{p1}"
