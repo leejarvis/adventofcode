@@ -6,6 +6,19 @@ class Point < Data.define(:x, :y)
   def advance(direction, amount = 1)
     Point[x + direction.x * amount, y + direction.y * amount]
   end
+
+  # What direction is this point from the other point?
+  def dir_from(other)
+    dx = x - other.x
+    dy = y - other.y
+
+    case [dx, dy]
+      when [0, -1] then Direction.north
+      when [1, 0] then Direction.east
+      when [0, 1] then Direction.south
+      when [-1, 0] then Direction.west
+    end
+  end
 end
 
 class Direction < Data.define(:x, :y)
@@ -26,6 +39,15 @@ class Direction < Data.define(:x, :y)
 
   def index
     DIRS.index([x, y])
+  end
+
+  def to_s
+    case self
+    when Direction.north then "N"
+    when Direction.east then "E"
+    when Direction.south then "S"
+    when Direction.west then "W"
+    end
   end
 end
 
@@ -80,6 +102,12 @@ class Grid
 
   def put(point, value)
     rows[point.y][point.x] = value
+  end
+
+  def neighbours(point)
+    [[0, -1], [1, 0], [0, 1], [-1, 0]].map { |(x, y)|
+      point.add(x, y)
+    }
   end
 
   def line_of_sight(point, dir)
