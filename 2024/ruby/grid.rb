@@ -7,6 +7,10 @@ class Point < Data.define(:x, :y)
     Point[x + direction.x * amount, y + direction.y * amount]
   end
 
+  def to_s
+    "(#{x}, #{y})"
+  end
+
   # What direction is this point from the other point?
   def dir_from(other)
     dx = x - other.x
@@ -60,6 +64,10 @@ class Grid
     new(rows: rows)
   end
 
+  def self.square(size, value = 0)
+    new(rows: Array.new(size) { Array.new(size, value) })
+  end
+
   attr_reader :rows, :height, :width
 
   def initialize(rows:)
@@ -71,6 +79,14 @@ class Grid
 
   def reset!
     @rows = Marshal.load(@original_rows)
+  end
+
+  def first_point
+    @first_point ||= Point[0, 0]
+  end
+
+  def last_point
+    @last_point ||= Point[height - 1, width - 1]
   end
 
   def at(*point)
