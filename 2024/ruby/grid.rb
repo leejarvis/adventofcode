@@ -3,8 +3,28 @@ class Point < Data.define(:x, :y)
     Point[self.x + x, self.y + y]
   end
 
+  def north
+    Point[self.x, self.y - 1]
+  end
+
+  def south
+    Point[self.x, self.y + 1]
+  end
+
+  def east
+    Point[self.x + 1, self.y]
+  end
+
+  def west
+    Point[self.x - 1, self.y]
+  end
+
   def advance(direction, amount = 1)
     Point[x + direction.x * amount, y + direction.y * amount]
+  end
+
+  def manhattan_distance(other)
+    (x - other.x).abs + (y - other.y).abs
   end
 
   def to_s
@@ -142,9 +162,13 @@ class Grid
     rows.each(&block)
   end
 
-  def each_point(&block)
+  def each_point(matching: nil, &block)
+    return enum_for(:each_point) unless block_given?
+
     each_with_index { |row, y|
-      row.each_index { |x| yield Point[x, y] }
+      row.each_with_index { |c, x|
+        yield Point[x, y] if matching.nil? || matching == c
+      }
     }
   end
 
