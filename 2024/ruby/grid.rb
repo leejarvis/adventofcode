@@ -27,6 +27,12 @@ class Point < Data.define(:x, :y)
     (x - other.x).abs + (y - other.y).abs
   end
 
+  def neighbours
+    [[0, -1], [1, 0], [0, 1], [-1, 0]].map { |(x, y)|
+      add(x, y)
+    }
+  end
+
   def to_s
     "(#{x}, #{y})"
   end
