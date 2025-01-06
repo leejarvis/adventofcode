@@ -1,42 +1,57 @@
 #!/usr/bin/env ruby
 
-require_relative "grid"
+# Gross. Wanted to solve this with BFS, will return to day21_bfs.rb later
 
-numpad = {
-  "7" => Point[0,0], "8" => Point[1,0], "9" => Point[2,0],
-  "4" => Point[0,1], "5" => Point[1,1], "6" => Point[2,1],
-  "1" => Point[0,2], "2" => Point[1,2], "3" => Point[2,2],
-  "0" => Point[1,3], "A" => Point[2,3]
+NUMPAD = {
+  "A,A" => "", "A,0" => "<", "A,1" => "^<<", "A,2" => "<^", "A,3" => "^",
+  "A,4" => "^^<<", "A,5" => "<^^", "A,6" => "^^", "A,7" => "^^^<<",
+  "A,8" => "<^^^", "A,9" => "^^^",
+  "0,A" => ">", "0,0" => "", "0,1" => "^<", "0,2" => "^", "0,3" => "^>",
+  "0,4" => "^^<", "0,5" => "^^", "0,6" => "^^>", "0,7" => "^^^<",
+  "0,8" => "^^^", "0,9" => "^^^>",
+  "1,A" => ">>v", "1,0" => ">v", "1,1" => "", "1,2" => ">", "1,3" => ">>",
+  "1,4" => "^", "1,5" => "^>", "1,6" => "^>>", "1,7" => "^^",
+  "1,8" => "^^>", "1,9" => "^^>>",
+  "2,A" => "v>", "2,0" => "v", "2,1" => "v", "2,2" => "", "2,3" => ">",
+  "2,4" => "<^", "2,5" => "^", "2,6" => "^>", "2,7" => "<^^",
+  "2,8" => "^^", "2,9" => "^^>",
+  "3,A" => "v", "3,0" => "<v", "3,1" => "<<", "3,2" => "<", "3,3" => "",
+  "3,4" => "<<^", "3,5" => "<^", "3,6" => "^", "3,7" => "<<^^",
+  "3,8" => "<^^", "3,9" => "^^",
+  "4,A" => ">>vv", "4,0" => ">vv", "4,1" => "v", "4,2" => "v>",
+  "4,3" => "v>>", "4,4" => "", "4,5" => ">", "4,6" => ">>",
+  "4,7" => "^", "4,8" => "^>", "4,9" => "^>>",
+  "5,A" => "vv>", "5,0" => "vv", "5,1" => "<v", "5,2" => "v", "5,3" => "v>",
+  "5,4" => "<", "5,5" => "", "5,6" => ">", "5,7" => "<^",
+  "5,8" => "^", "5,9" => "^>",
+  "6,A" => "vv", "6,0" => "<vv", "6,1" => "<<v", "6,2" => "<v",
+  "6,3" => "v", "6,4" => "<<", "6,5" => "<", "6,6" => "",
+  "6,7" => "<<^", "6,8" => "<^", "6,9" => "^",
+  "7,A" => ">>vvv", "7,0" => ">vvv", "7,1" => "vv", "7,2" => "vv>",
+  "7,3" => "vv>>", "7,4" => "v", "7,5" => "v>", "7,6" => "v>>",
+  "7,7" => "", "7,8" => ">", "7,9" => ">>",
+  "8,A" => "vvv>", "8,0" => "vvv", "8,1" => "<vv", "8,2" => "vv",
+  "8,3" => "vv>", "8,4" => "<v", "8,5" => "v", "8,6" => "v>",
+  "8,7" => "<", "8,8" => "", "8,9" => ">",
+  "9,A" => "vvv", "9,0" => "<vvv", "9,1" => "<<vv", "9,2" => "<vv",
+  "9,3" => "vv", "9,4" => "<<v", "9,5" => "<v", "9,6" => "v",
+  "9,7" => "<<", "9,8" => "<", "9,9" => ""
 }
 
-dirpad = {
-  "^" => Point[1,0], "A" => Point[2,0],
-  "<" => Point[0,1], "v" => Point[1,1], ">" => Point[2,1]
+DIRPAD = {
+  "A,A" => "", "A,^" => "<", "A,<" => "v<<", "A,v" => "v<", "A,>" => "v",
+  "^,A" => ">", "^,^" => "", "^,<" => "v<", "^,v" => "v", "^,>" => "v>",
+  "<,A" => ">>^", "<,^" => ">^", "<,<" => "", "<,v" => ">", "<,>" => ">>",
+  "v,A" => "^>", "v,^" => "^", "v,<" => "<", "v,v" => "", "v,>" => ">",
+  ">,A" => "^", ">,^" => "<^", ">,<" => "<<", ">,v" => "<", ">,>" => ""
 }
-
-def path(keypad, from, to)
-  paths = { from => [] }
-  queue = [from]
-
-  while (key = queue.shift)
-    return paths[key].map(&:last) if key == to
-
-    dirs = [[-1, 0, "<"], [0, -1, "^"], [0, 1, "v"], [1, 0, ">"]]
-    dirs.each do |(x, y, d)|
-      next_key = key.add(x, y)
-      next unless keypad.value?(next_key) || !paths.key?(next_key)
-      paths[next_key] = paths[key] + [[next_key, d]]
-      queue << next_key
-    end
-  end
-end
 
 def enter_code(keypad, code)
   output = ""
   current = "A"
 
   code.chars.each { |c|
-    output += path(keypad, keypad[current], keypad[c]).join
+    output += keypad["#{current},#{c}"]
     output += "A"
     current = c
   }
@@ -44,27 +59,24 @@ def enter_code(keypad, code)
   output
 end
 
-p1 = 0
-DATA.readlines.map(&:chomp).each { |code|
-  s1 = enter_code(numpad, code)
-  s2 = enter_code(dirpad, s1)
-  s3 = enter_code(dirpad, s2)
+def complexity(code, n_robots)
+  sequence = enter_code(NUMPAD, code)
+  n_robots.times { sequence = enter_code(DIRPAD, sequence) }
+  sequence.size * code.to_i
+end
 
-  p [code, s3.size, s3]
-  p1 += s3.size * code.to_i
+p1 = p2 = 0
+DATA.readlines.map(&:chomp).each { |code|
+  p1 += complexity(code, 2)
+  # p2 += complexity(code, 25)
 }
 
-# ["029A", 68, 29] - correct
-# ["980A", 60, 980] - correct
-# ["179A", 68, 179] - correct
-# ["456A", 64, 456] - correct
-# ["379A", 68, 379] - incorrect, 68 should be 64
-
-p p1 #=> 127900 - should be 126384
+puts "P1: #{p1}"
+puts "P2: #{p2}"
 
 __END__
-029A
-980A
-179A
-456A
-379A
+540A
+839A
+682A
+826A
+974A
