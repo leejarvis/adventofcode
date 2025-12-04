@@ -24,3 +24,6 @@ foo-*.tar
 
 # Temporary files, for example, from tests.
 /elixir/tmp/
+
+**/input/*.txt
+!**/input/*.example.txt
